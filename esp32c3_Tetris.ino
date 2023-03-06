@@ -45,18 +45,18 @@
 #define next_blockx           12        //设置展示下一个方块的X位置
 #define next_blocky           15        //设置展示下一个方块的Y位置
 #define def_n_x                1        //去掉方框后，游戏场地的起始X坐标
-#define def_n_y               39        //去掉方框后，游戏场地的起始X坐标
-#define lv2                 1000        //定义等级2所需分数，方块下落每步移动2像素
-#define lv3                10000        //定义等级3所需分数，方块下落每步移动3像素
+#define def_n_y               39        //去掉方框后，游戏场地的起始y坐标
+#define lv2                 1000        //定义难度等级2所需分数，方块下落每步移动2像素
+#define lv3                10000        //定义难度等级3所需分数，方块下落每步移动3像素
 
 int16_t changd[changdi_w][changdi_h];       //记录场地中每一个方块位置是否被占用（游戏场地坐标）
 int16_t next_block[3]={0,0,0};        //记录下一个方块的类型和状态
 int16_t now_block[3]={0,0,0};       //记录当前方块的类型和状态
 int fs=0;                               //用于记录总分数
 int realx=blockxy*4+1,realy=def_n_y-blockxy;        //当前方块的初始XY真实坐标
-long t1=0,t2=0,t3=0;        //millis()函数比对，定时运行。
+long t1=0,t2=0,t3=0;        //millis()函数缓存，用于定时运行。
 int16_t zuobiao[4][2]={0,0,0,0,0,0,0,0};        //当前方块中4个小方块的真实坐标
-int8_t steps=0,level=1;       //steps记录游戏运行步骤
+int8_t steps=0,level=1;       //steps记录游戏运行步骤，level储存当前游戏难度等级
 
 void a_block(int16_t x,int16_t y,int16_t color,bool nn);        //绘制单个小方块
 void a_l(int16_t x,int16_t y,int16_t color,int8_t state,bool nn);       //绘制竖条方块
@@ -72,7 +72,7 @@ void scoretext();       //初始化分数栏score:000000
 bool check_a_line(int8_t line);       //检测场地里的line行是否占满方块
 void dispel_movedown(int8_t line);    //消除被占满的行，写入屏幕，并增加分数
 void r_next_block();        //随机生成下一个方块
-void draw_block_color(int16_t x,int16_t y,bool nn);       //根据坐标绘制相应色彩的方块，nn区分当前或下一个方块
+void draw_block_color(int16_t x,int16_t y,bool nn);       //根据坐标绘制相应色彩的方块，参数nn用于区分当前或下一个方块
 void draw_block_black(int16_t x,int16_t y,bool nn);       //根据坐标绘制黑色方块用于擦除方块运动痕迹
 void set_nowblock();        //读取下一个方块信息至当前方块
 void csh_changdi();         //初始化游戏场地素组，
@@ -84,17 +84,17 @@ void move_block_rl(bool i);       //方块左右移动
 void block_fall();        //控制当前方块下落
 void kongzhi();       //按钮控制检测，如果不按下则方块下落
 void start_game();        //游戏初始化
-void draw_level(int8_t i);        //绘制等级        
+void draw_level(int8_t i);        //绘制难度等级        
 void display_game_over();         //绘制游戏结束时GAME OVER
 void check_level_change();        //检测是否达到难度等级相应分数，达到则升级难度
 
-//*****frame********************
+//*****frame********************只刷新屏幕上有变化的像素，减少整屏刷新产生的闪烁。
 
-int16_t n_frame[LCD_W][LCD_H];        //当前帧。用此数组储存屏幕当前显示的每一个像素的颜色
-int16_t f_frame[LCD_W][LCD_H];        //叫下一帧或者叫未来帧，用此数组储存屏幕即将要显示的每个像素的颜色
+int16_t n_frame[LCD_W][LCD_H];        //当前帧缓存。用此数组储存屏幕当前显示的每一个像素的颜色
+int16_t f_frame[LCD_W][LCD_H];        //叫下一帧或者叫未来帧缓存，用此数组储存屏幕即将要显示的每个像素的颜色
 
-void csh_p();       //初始化两个帧数组
-bool compare_nf(int16_t x,int16_t y);       //比较当前帧和未来帧每个对应像素的颜色是否有变化，有变化就返回1,无就返回0
+void csh_p();       //初始化n_frame、f_frame两个帧数组，赋0值
+bool compare_nf(int16_t x,int16_t y);       //比较当前帧和未来帧每个对应像素的颜色是否有变化，有变化就返回1,无就返回0。
 void write_changed_to_tft();        //将未来帧中有变化的像素颜色写入当前帧数组中，并发送给屏幕。
 
 //*******keys*******************
@@ -104,7 +104,7 @@ unsigned int down_up();       //检测按钮是否被按下，并返回相应的
 
 //*********lcd***********************
 
-void bl_pwm(int16_t bfb);        //bfb（百分比）,背光亮度调节
+void bl_pwm(int16_t bfb);        //bfb（百分比）,背光亮度调节，合宙ESP32C3的GPIO 11针脚需要刷入熔丝程序解锁，否则无法操纵。
 void tft_setup();       //屏幕初始化
 
 //*******************************
